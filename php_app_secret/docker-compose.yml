@@ -1,0 +1,46 @@
+version: '3.1'
+
+networks:
+    lamp-network:
+    
+services:
+    web-server:
+        image: krishnakumarkp/blog-php-secret
+        ports: 
+            - "80:80"
+        links:
+            - blog-mysql
+        networks:
+            - lamp-network
+        secrets:
+            - db_host
+            - db_name
+            - db_user
+            - db_password
+            
+    blog-mysql:
+        image: krishnakumarkp/blog-mysql
+        ports: 
+            - "3306:3306"
+        command: --default-authentication-plugin=mysql_native_password
+        restart: always
+        environment:
+            - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db_password
+        volumes:
+            - ./conf:/etc/mysql/conf.d
+            - persistent:/var/lib/mysql
+        networks:
+            - lamp-network
+        secrets:
+            - db_password
+secrets:
+    db_host:
+        file: ./db_host.txt
+    db_name:
+        file: ./db_name.txt
+    db_user:
+        file: ./db_user.txt
+    db_password:
+        file: ./db_password.txt
+volumes:
+    persistent:
